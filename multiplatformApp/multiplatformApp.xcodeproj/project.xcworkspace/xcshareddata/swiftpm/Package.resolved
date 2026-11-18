@@ -1,5 +1,4 @@
 {
-  "originHash" : "130a5880edf74cb094a31552568d1a739877738a9979f14717ffd44168cd09fe",
   "pins" : [
     {
       "identity" : "dynamiccolor",
@@ -24,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/rickclephas/KMP-NativeCoroutines.git",
       "state" : {
-        "revision" : "873263c0410337632cbda63ed712dffca8d4ae53",
-        "version" : "1.0.0-ALPHA-17"
+        "revision" : "54a45fbb15bc0bebc54081f87683830d3bc9e84e",
+        "version" : "1.0.6"
       }
     },
     {
@@ -44,15 +43,6 @@
       "state" : {
         "revision" : "9dcaa4b333db437b0fbfaf453fad29069044a8b4",
         "version" : "6.6.0"
-      }
-    },
-    {
-      "identity" : "zenbreak",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Giuliopime/ZenBreak",
-      "state" : {
-        "revision" : "dec62a3d1295f5ffbc53e337a26ce1c898c0df66",
-        "version" : "0.1.1"
       }
     }
   ],

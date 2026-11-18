@@ -124,7 +124,15 @@ All plugins and dependencies are handled via the version catalog, which you can 
 #### Run the application
 
 ##### Running on macOS
-Open the `multiplatformApp` folder with XCode and run the project from XCode directly.
+The macOS app consumes the Kotlin `shared-core` module as a local Swift package (`Package.swift` in the repository root),
+so the Kotlin XCFramework has to be built before Xcode can resolve it:
+
+```sh
+./gradlew :shared-core:spmDevBuild
+```
+
+Then open the `multiplatformApp` folder with Xcode and run the project from Xcode directly.  
+Re-run the Gradle task whenever you change code in `shared-core`.
 
 ##### On desktop
 To run the desktop application in Android Studio, select `desktopApp` in the list of run configurations and click **Run**:  

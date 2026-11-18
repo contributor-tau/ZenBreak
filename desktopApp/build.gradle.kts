@@ -1,8 +1,7 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     alias(libs.plugins.multiplatform)
     alias(libs.plugins.compose)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.conveyor)
 }
 
@@ -10,29 +9,26 @@ group = "dev.giuliopime.zenbreak"
 version = "1.0.3"
 
 kotlin {
-
-    jvm {
-        withJava()
-    }
+    // withJava() is no longer needed (and is an error on Gradle 9): Java source sets are created by default
+    jvm()
     jvmToolchain(17)
 
     sourceSets {
-        val jvmMain by getting  {
-            dependencies {
-                implementation(compose.desktop.currentOs)
-                /*
-                // https://github.com/gradle/gradle/issues/20274
-                implementation("com.dorkbox:SystemTray:4.4") {
-                    exclude("java.desktop")
-                }
-                 */
-                implementation(compose.uiTooling)
-                implementation(project(":shared-core"))
-                implementation(project(":shared-compose-core"))
-                implementation(project(":shared-compose-settings"))
-                implementation(project(":shared-compose-popup"))
-                api(libs.koin.core)
+        jvmMain.dependencies {
+            implementation(compose.desktop.currentOs)
+            /*
+            // https://github.com/gradle/gradle/issues/20274
+            implementation("com.dorkbox:SystemTray:4.4") {
+                exclude("java.desktop")
             }
+             */
+            implementation(libs.compose.ui.tooling.preview)
+            implementation(libs.compose.ui.tooling)
+            implementation(project(":shared-core"))
+            implementation(project(":shared-compose-core"))
+            implementation(project(":shared-compose-settings"))
+            implementation(project(":shared-compose-popup"))
+            api(libs.koin.core)
         }
     }
 }
@@ -46,16 +42,6 @@ compose.desktop {
             description = "An app that reminds you to take a break from your screen!"
         }
     }
-}
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
-}
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "17"
 }
 
 tasks.withType<Jar> {
