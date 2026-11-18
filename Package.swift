@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.8
 import PackageDescription
 
 let packageName = "ZenBreakCoreKit"
@@ -6,8 +6,8 @@ let packageName = "ZenBreakCoreKit"
 let package = Package(
     name: packageName,
     platforms: [
-        .iOS(.v13),
-        .macOS(.v10_15)
+        .iOS(.v15),
+        .macOS(.v13)
     ],
     products: [
         .library(

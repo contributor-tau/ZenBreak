@@ -17,7 +17,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Notification
@@ -40,12 +42,27 @@ import dorkbox.systemTray.Separator
 import dorkbox.systemTray.SystemTray
  */
 import kotlinx.coroutines.delay
+import org.jetbrains.skia.Image
 
 private val featureFlags = FeatureFlags(
     startAtLogin = false,
     resetOnIdle = false
 )
 private val koin = initKoin().koin
+
+/**
+ * Loads an image bundled in `src/jvmMain/resources`.
+ * Replaces the classpath `painterResource(String)` overload, which was deprecated in Compose Multiplatform.
+ */
+private fun classpathPainter(path: String): Painter {
+    val bytes = Thread.currentThread().contextClassLoader.getResourceAsStream(path)
+        ?.use { it.readBytes() }
+        ?: error("Missing resource: $path")
+    return BitmapPainter(Image.makeFromEncoded(bytes).toComposeImageBitmap())
+}
+
+private val trayIcon = classpathPainter("logo_tray.png")
+private val windowIcon = classpathPainter("logo.png")
 
 fun main() = application {
     val viewModel: IZenBreakViewModel by koin.inject()
@@ -149,7 +166,7 @@ fun main() = application {
 
     Tray(
         state = trayState,
-        icon = painterResource("logo_tray.png"),
+        icon = trayIcon,
         onAction = {
             isSettingsWindowVisible = true
         },
@@ -199,7 +216,7 @@ fun main() = application {
         onCloseRequest = {
             isSettingsWindowVisible = false
         },
-        icon = painterResource("logo.png")
+        icon = windowIcon
     ) {
         ZenBreakUi(viewModel, featureFlags)
     }

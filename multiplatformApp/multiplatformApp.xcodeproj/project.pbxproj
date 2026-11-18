@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -218,7 +218,7 @@
 				0907C7D02AA97FFE00D6F33D /* XCRemoteSwiftPackageReference "LaunchAtLogin-Modern" */,
 				09D653172AD81C8E00E90B8B /* XCRemoteSwiftPackageReference "fluid-menu-bar-extra" */,
 				09D6531E2AD8353D00E90B8B /* XCRemoteSwiftPackageReference "DynamicColor" */,
-				0991F35B2AE87A6600A7E222 /* XCRemoteSwiftPackageReference "ZenBreak" */,
+				0991F35B2AE87A6600A7E222 /* XCLocalSwiftPackageReference ".." */,
 			);
 			productRefGroup = 4137AFC52A5F082E000787E3 /* Products */;
 			projectDirPath = "";
@@ -491,6 +491,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		0991F35B2AE87A6600A7E222 /* XCLocalSwiftPackageReference ".." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		0907C7D02AA97FFE00D6F33D /* XCRemoteSwiftPackageReference "LaunchAtLogin-Modern" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -500,20 +507,12 @@
 				kind = branch;
 			};
 		};
-		0991F35B2AE87A6600A7E222 /* XCRemoteSwiftPackageReference "ZenBreak" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Giuliopime/ZenBreak";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.0;
-			};
-		};
 		09BF68FA2AA4C64F00195DC0 /* XCRemoteSwiftPackageReference "KMP-NativeCoroutines" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/rickclephas/KMP-NativeCoroutines.git";
 			requirement = {
 				kind = exactVersion;
-				version = "1.0.0-ALPHA-17";
+				version = 1.0.6;
 			};
 		};
 		09D653172AD81C8E00E90B8B /* XCRemoteSwiftPackageReference "fluid-menu-bar-extra" */ = {
@@ -542,7 +541,7 @@
 		};
 		0991F35C2AE87A6600A7E222 /* ZenBreakCoreKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 0991F35B2AE87A6600A7E222 /* XCRemoteSwiftPackageReference "ZenBreak" */;
+			package = 0991F35B2AE87A6600A7E222 /* XCLocalSwiftPackageReference ".." */;
 			productName = ZenBreakCoreKit;
 		};
 		09BF68FB2AA4C64F00195DC0 /* KMPNativeCoroutinesAsync */ = {

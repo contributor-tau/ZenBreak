@@ -7,24 +7,36 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-      - name: Setup netrc
-        env:
-          AUTH_TOKEN: ${{ secrets.AUTH_TOKEN_SWIFT_PACKAGES }}
-          APP_STORE_CONNECT_API_KEY_IN_HOUSE: ${{ secrets.APP_STORE_CONNECT_API_KEY_IN_HOUSE }}
-          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
-          APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
-          APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
-          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
-        run: echo -e "machine github.com\n login $AUTH_TOKEN" >> ~/.netrc
+        uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: "temurin"
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      # The Xcode project consumes ZenBreakCoreKit as a local Swift package (../Package.swift),
+      # so the Kotlin XCFramework has to be built before Xcode resolves packages.
+      - name: Build ZenBreakCoreKit XCFramework
+        run: ./gradlew :shared-core:spmDevBuild --no-daemon
+
       - name: Setup ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.0'
+          ruby-version: '3.3'
           bundler-cache: true
           working-directory: 'multiplatformApp'
 
-      - uses: maierj/fastlane-action@v3.0.0
-        with:
-          lane: 'beta'
-          subdirectory: 'multiplatformApp'
+      - name: Build and upload to TestFlight
+        working-directory: multiplatformApp
+        # Secrets must be exposed on the step that runs fastlane, using the names the Fastfile reads.
+        env:
+          APP_STORE_CONNECT_API_KEY_IN_HOUSE: ${{ secrets.APP_STORE_CONNECT_API_KEY_IN_HOUSE }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+        run: bundle exec fastlane beta

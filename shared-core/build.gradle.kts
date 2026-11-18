@@ -1,25 +1,36 @@
 plugins {
     alias(libs.plugins.multiplatform)
     alias(libs.plugins.plugin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.android.library)
+    alias(libs.plugins.android.kmp.library)
     alias(libs.plugins.native.coroutines)
-    alias(libs.plugins.kmm.bridge)
-    `maven-publish`
+    alias(libs.plugins.kmm.bridge.github)
 }
 
-group = "dev.giuliopime.zenbreakcorekit"
-version = "0.1.1"
+val GROUP: String by project
+val LIBRARY_VERSION: String by project
+
+group = GROUP
+version = LIBRARY_VERSION
 
 kotlin {
-    androidTarget()
+    jvmToolchain(17)
+
+    compilerOptions {
+        // DefaultBreakManager is an expect/actual class (still Beta in Kotlin 2.x)
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
+    android {
+        namespace = "dev.giuliopime.zenbreak.shared_core"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
+    }
 
     // Windows and Linux targets
     jvm("desktop")
 
     // iOS
     listOf(
-        iosX64(),
         iosArm64(),
         iosSimulatorArm64()
     ).forEach {
@@ -30,6 +41,8 @@ kotlin {
     }
 
     // macOS
+    // macosX64 is deprecated since Kotlin 2.3.20 and Kotlin 2.4.x is the last line able to build it.
+    // It is kept so the macOS app can still ship a universal (Intel + Apple Silicon) binary.
     listOf(
         macosX64(),
         macosArm64()
@@ -41,76 +54,32 @@ kotlin {
     }
 
     sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation(libs.kotlinx.coroutines)
-                implementation(libs.kotlinx.serialization)
-                implementation(libs.bundles.multiplatformSettings)
-                implementation(libs.bundles.koin)
-            }
+        all {
+            languageSettings.optIn("kotlin.experimental.ExperimentalObjCName")
         }
 
-        val desktopMain by getting {
-            dependsOn(commonMain)
+        commonMain.dependencies {
+            implementation(libs.kotlinx.coroutines)
+            implementation(libs.kotlinx.serialization)
+            implementation(libs.bundles.multiplatformSettings)
+            implementation(libs.bundles.koin)
         }
 
-        val androidMain by getting {
-            dependsOn(commonMain)
-            dependencies {
-                api(libs.androidx.datastore.preferences)
-                api(libs.multiplatform.settings.datastore)
-                api(libs.koin.android)
-            }
-        }
-
-        val iosX64Main by getting
-        val iosArm64Main by getting
-        val iosSimulatorArm64Main by getting
-        val iosMain by creating {
-            dependsOn(commonMain)
-            iosX64Main.dependsOn(this)
-            iosArm64Main.dependsOn(this)
-            iosSimulatorArm64Main.dependsOn(this)
-        }
-
-        val macosX64Main by getting
-        val macosArm64Main by getting
-        val macosMain by creating {
-            dependsOn(commonMain)
-            macosX64Main.dependsOn(this)
-            macosArm64Main.dependsOn(this)
+        androidMain.dependencies {
+            api(libs.androidx.datastore.preferences)
+            api(libs.multiplatform.settings.datastore)
+            api(libs.koin.android)
         }
     }
 }
-
-kotlin.sourceSets.all {
-    languageSettings.optIn("kotlin.experimental.ExperimentalObjCName")
-}
-
-android {
-    compileSdk = (findProperty("android.compileSdk") as String).toInt()
-    namespace = "dev.giuliopime.zenbreak.shared_core"
-
-    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-    // This library doesn't have any resource
-
-    defaultConfig {
-        minSdk = (findProperty("android.minSdk") as String).toInt()
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlin {
-        jvmToolchain(17)
-    }
-}
-
-addGithubPackagesRepository()
 
 kmmbridge {
     frameworkName.set("ZenBreakCoreKit")
-    spm()
-    mavenPublishArtifacts()
+    // The XCFramework zip is uploaded as a GitHub Release asset, which (unlike GitHub Packages)
+    // can be downloaded by Swift Package Manager without any credentials.
+    gitHubReleaseArtifacts()
+    spm(swiftToolVersion = "5.8") {
+        iOS { v("15") }
+        macOS { v("13") }
+    }
 }

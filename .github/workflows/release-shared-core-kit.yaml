@@ -1,13 +1,58 @@
 name: Release ZenBreakCoreKit
 
+# Publishes the ZenBreakCoreKit XCFramework as a GitHub Release asset and tags a commit whose
+# Package.swift points at it, so it can be consumed through Swift Package Manager without credentials.
+# The version is LIBRARY_VERSION in gradle.properties: bump it before running this workflow.
+
 on: [workflow_dispatch]
 
+permissions:
+  contents: write
+
 jobs:
-  call-kmmbridge-publish:
-    permissions:
-      contents: write
-      packages: write
-    uses: touchlab/KMMBridgeGithubWorkflow/.github/workflows/faktorybuildautoversion.yml@v1.0
-    with:
-      jvmVersion: 17
-      versionBaseProperty: LIBRARY_VERSION
+  kmmbridgepublish:
+    concurrency: "kmmbridgepublish-${{ github.repository }}"
+    runs-on: macos-latest
+    steps:
+      - name: Checkout the repo with tags
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: touchlab/read-property@0.2
+        id: versionPropertyValue
+        with:
+          file: ./gradle.properties
+          property: LIBRARY_VERSION
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: "temurin"
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Create or Find Artifact Release
+        id: devrelease
+        uses: softprops/action-gh-release@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: "${{ steps.versionPropertyValue.outputs.propVal }}"
+
+      - name: Build and publish XCFramework
+        run: |
+          ./gradlew :shared-core:kmmBridgePublish \
+            -PNATIVE_BUILD_TYPE=RELEASE \
+            -PGITHUB_ARTIFACT_RELEASE_ID=${{ steps.devrelease.outputs.id }} \
+            -PGITHUB_PUBLISH_TOKEN=${{ secrets.GITHUB_TOKEN }} \
+            -PGITHUB_REPO=${{ github.repository }} \
+            -PENABLE_PUBLISHING=true \
+            --no-daemon --stacktrace
+
+      - uses: touchlab/ga-update-release-tag@v1.1
+        with:
+          commitMessage: "KMP SPM package release for ${{ steps.versionPropertyValue.outputs.propVal }}"
+          tagMessage: "KMP release version ${{ steps.versionPropertyValue.outputs.propVal }}"
+          tagVersion: ${{ steps.versionPropertyValue.outputs.propVal }}
